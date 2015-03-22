@@ -13,7 +13,8 @@ library(gridExtra)
 set.seed(1935)
 ```
 
-Load the training and validation data.
+Load the training and validation data. Data from 
+http://groupware.les.inf.puc-rio.br/har
 
 ```r
 train_dat <- read.csv("pml-training.csv")
@@ -45,7 +46,6 @@ Convert all movement features to the numeric type.
 dyn_names <- names(train_dat)[2:(ncol(train_dat)-1)]
 train_dat <- mutate_each_(train_dat, funs(as.numeric), 
                           dyn_names)
-train_dat <- sample_n(train_dat, 1000)
 ```
 
 ###Parition Dataset
@@ -67,6 +67,12 @@ modFit <- train(classe ~ ., method="rf", data=train,
                  trControl = fitControl, prox=TRUE)
 ```
 
+```
+## Loading required package: randomForest
+## randomForest 4.6-10
+## Type rfNews() to see new features/changes/bug fixes.
+```
+
 ###Model Diagnostics
 Plot K fold cross validation vs. accuracy and kappa with in the training dataset.
 
@@ -78,7 +84,7 @@ grid.arrange(p1, p2)
 
 ![](weights_files/figure-html/unnamed-chunk-8-1.png) 
 
-Plot of the confusion matrix.
+Plot of the confusion matrix. Note that the test set is used as a reference for computing out of sample error.
 
 ```r
 pred <- predict(modFit, test)
@@ -104,8 +110,8 @@ plot(p)
 ```
 
 ![](weights_files/figure-html/unnamed-chunk-10-1.png) 
-Overall Performance
 
+Overall performance including the final out of sample error.
 
 ```r
 print(cm$overall)
@@ -113,8 +119,8 @@ print(cm$overall)
 
 ```
 ##       Accuracy          Kappa  AccuracyLower  AccuracyUpper   AccuracyNull 
-##   9.112903e-01   8.878727e-01   8.687735e-01   9.435699e-01   2.701613e-01 
+##      0.9942904      0.9927770      0.9917585      0.9962027      0.2844617 
 ## AccuracyPValue  McnemarPValue 
-##  5.808661e-101            NaN
+##      0.0000000            NaN
 ```
 

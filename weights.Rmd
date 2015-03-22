@@ -2,7 +2,9 @@
 title: "Weight Lifting Wearables"
 author: "Raymond C"
 date: "19/03/2015"
-output: html_document
+output:
+  html_document:
+    keep_md: yes
 ---
 
 ###Preliminaries
@@ -15,7 +17,8 @@ library(gridExtra)
 set.seed(1935)
 ```
 
-Load the training and validation data.
+Load the training and validation data. Data from 
+http://groupware.les.inf.puc-rio.br/har
 ```{r}
 train_dat <- read.csv("pml-training.csv")
 test_dat <- read.csv("pml-testing.csv")
@@ -43,7 +46,6 @@ Convert all movement features to the numeric type.
 dyn_names <- names(train_dat)[2:(ncol(train_dat)-1)]
 train_dat <- mutate_each_(train_dat, funs(as.numeric), 
                           dyn_names)
-train_dat <- sample_n(train_dat, 1000)
 ```
 
 ###Parition Dataset
@@ -57,7 +59,7 @@ test <- train_dat[-inTrain,]
 
 ###Train the Model
 Train the model using the random tree algorithm. Note that random tree does not require much preprocessing unlike regression. Cross validation is built into the model training.
-```{r,cache=TRUE}
+```{r}
 fitControl <- trainControl(method="cv", number=10)
 modFit <- train(classe ~ ., method="rf", data=train, 
                  trControl = fitControl, prox=TRUE)
@@ -71,7 +73,7 @@ p2 <- qplot(Resample, Kappa, data=modFit$resample)
 grid.arrange(p1, p2)
 ```
 
-Plot of the confusion matrix.
+Plot of the confusion matrix. Note that the test set is used as a reference for computing out of sample error.
 ```{r,message=FALSE}
 pred <- predict(modFit, test)
 truth <- test$classe
@@ -91,8 +93,8 @@ p <- ggplot(byClass, aes(x=Class, y=value, group=Var2)) +
   geom_point() + facet_wrap(~ Var2)
 plot(p)
 ```
-Overall Performance
 
+Overall performance including the final out of sample error.
 ```{r}
 print(cm$overall)
 ```
